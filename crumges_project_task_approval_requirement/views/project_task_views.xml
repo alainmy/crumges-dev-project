@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form2_inherit_approval" model="ir.ui.view">
+        <field name="name">project.task.form.approval</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_send_approval_requirement" string="Send for Approval" type="object" class="btn-primary" invisible="approval_status != 'draft' or not use_approval_requirements or not require_approval"/>
+                <button name="%(action_project_task_approval_reject_wizard)d" string="Solicitar Revisión" type="action" class="btn-secondary" invisible="approval_status not in ('draft', 'sent') or not use_approval_requirements or not require_approval"/>
+                <button name="%(action_project_task_approval_discontinue_wizard)d" string="Cancelar Tarea" type="action" class="btn-secondary" invisible="approval_status in ('approved', 'discontinued') or not use_approval_requirements or not require_approval"/>
+                <button name="action_reset_approval" string="Reiniciar Aprobación" type="object" class="btn-secondary" invisible="approval_status not in ('rejected', 'discontinued', 'expired') or not use_approval_requirements or not require_approval"/>
+            </xpath>
+            <xpath expr="//div[@id='date_deadline_and_recurring_task']" position="after">
+                <field name="approval_status" readonly="1" invisible="not use_approval_requirements or not require_approval"/>
+            </xpath>
+            <xpath expr="//field[@name='tag_ids']" position="after">
+                <field name="use_approval_requirements" invisible="1"/>
+                <field name="require_approval" widget="boolean_toggle" invisible="not use_approval_requirements"/>
+            </xpath>
+            <notebook position="inside">
+                <page string="Approval Requirements" name="approval_requirements" invisible="not use_approval_requirements or not require_approval">
+
+                    <group>
+                        <field name="approval_token" invisible="1"/>
+                        <field name="approval_content_type" widget="radio" options="{'horizontal': true}"/>
+                        <field name="approval_note" placeholder="e.g. Please review the following proofs carefully. Once approved..." help="These notes will be visible to the customer on the web portal."/>
+                        <field name="approval_conformity_text" placeholder="e.g. I declare under oath that I have reviewed..." help="The customer must read this legal text before drawing their signature."/>
+                    </group>
+                    <field name="approval_line_ids" mode="kanban" invisible="approval_content_type == 'description'">
+                        <kanban>
+                            <field name="image"/>
+                            <field name="caption"/>
+                            <templates>
+                                <t t-name="kanban-box">
+                                    <div class="oe_kanban_global_click">
+                                        <div class="o_kanban_image">
+                                            <field name="image" widget="image" options="{'size': [100, 100]}"/>
+                                        </div>
+                                        <div class="oe_kanban_details">
+                                            <field name="caption"/>
+                                        </div>
+                                    </div>
+                                </t>
+                            </templates>
+                        </kanban>
+                        <form>
+                            <group>
+                                <field name="image" widget="image"/>
+                                <field name="caption"/>
+                            </group>
+                        </form>
+                    </field>
+                    <group invisible="approval_status not in ('rejected', 'discontinued')">
+                        <field name="approval_rejection_reason" readonly="1" string="Motivo de Revisión / Cancelación"/>
+                    </group>
+                    <group string="Approval Details" invisible="approval_status != 'approved'">
+                        <field name="approval_signed_by" readonly="1"/>
+                        <field name="approval_signed_date" readonly="1"/>
+                        <field name="approval_signature" widget="signature" readonly="1"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <record id="view_task_kanban_inherit_approval" model="ir.ui.view">
+        <field name="name">project.task.kanban.approval</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//t[@t-name='card']/main" position="inside">
+                <field name="use_approval_requirements" invisible="1"/>
+                <field name="require_approval" invisible="1"/>
+                <field name="approval_status" invisible="1"/>
+            </xpath>
+            <xpath expr="//t[@t-name='card']/main" position="before">
+                <div invisible="not use_approval_requirements or not require_approval or approval_status != 'draft'" class="ribbon ribbon-top-right"><span class="text-bg-info">R. Aprob.</span></div>
+                <div invisible="not use_approval_requirements or approval_status != 'sent'" class="ribbon ribbon-top-right"><span class="text-bg-warning">Enviado</span></div>
+                <div invisible="not use_approval_requirements or approval_status != 'approved'" class="ribbon ribbon-top-right"><span class="text-bg-success">Aprobado</span></div>
+                <div invisible="not use_approval_requirements or approval_status != 'rejected'" class="ribbon ribbon-top-right"><span class="text-bg-warning">Revisar</span></div>
+                <div invisible="not use_approval_requirements or approval_status != 'discontinued'" class="ribbon ribbon-top-right"><span class="text-bg-danger">Cancelado</span></div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

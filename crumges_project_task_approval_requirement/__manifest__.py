@@ -1,0 +1,30 @@
+{
+    "name": "Approval Requirement for Projects",
+    "summary": "Emulates the Approval Requirement Approval functionality for tasks and projects.",
+    "version": "18.0.1.0.0",
+    "author": "Crumges",
+    "website": "https://crumges.com",
+    "category": "Services/Project",
+    "depends": [
+        "project",
+        "portal",
+        "crumges_project_portal_ux",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "data/cron.xml",
+        "data/mail_template_data.xml",
+        "wizard/project_task_approval_reject_wizard_views.xml",
+        "wizard/project_task_approval_discontinue_wizard_views.xml",
+        "views/project_project_views.xml",
+        "views/project_task_views.xml",
+        "views/portal_templates.xml",
+        "report/project_task_report.xml",
+    ],
+    "demo": [
+        "demo/demo.xml",
+    ],
+    "installable": True,
+    "application": False,
+    "license": "AGPL-3",
+}

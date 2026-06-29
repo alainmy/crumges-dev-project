@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Change Project Kanban default action to open form view instead of tasks -->
+    <record id="view_project_kanban_inherit_ux" model="ir.ui.view">
+        <field name="name">project.project.kanban.inherit.ux</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="action"></attribute>
+                <attribute name="type">edit</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

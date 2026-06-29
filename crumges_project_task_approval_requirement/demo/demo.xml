@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Stages -->
+        <record id="project_stage_draft" model="project.task.type">
+            <field name="name">Borrador</field>
+        </record>
+        <record id="project_stage_sent" model="project.task.type">
+            <field name="name">Enviado al Cliente</field>
+        </record>
+        <record id="project_stage_approved" model="project.task.type">
+            <field name="name">Aprobado</field>
+        </record>
+        <record id="project_stage_rejected" model="project.task.type">
+            <field name="name">Rechazado</field>
+        </record>
+
+        <!-- Project -->
+        <record id="demo_project_approval_requirement" model="project.project">
+            <field name="name">Estudio de Diseño - Proyecto Demo</field>
+            <field name="type_ids" eval="[(6, 0, [ref('project_stage_draft'), ref('project_stage_sent'), ref('project_stage_approved'), ref('project_stage_rejected')])]"/>
+            <field name="approval_default_note">Por favor revisa cuidadosamente las siguientes muestras. Una vez aprobadas, cualquier modificación adicional tendrá un costo extra.</field>
+            <field name="approval_conformity_text">Declaro bajo juramento que he revisado todas las muestras adjuntas en este documento, estoy conforme con cada una de ellas y procedo a firmar en señal de conformidad.</field>
+
+        </record>
+
+        <!-- Stage Rules -->
+        <record id="demo_rule_sent" model="project.approval.stage.rule">
+            <field name="project_id" ref="demo_project_approval_requirement"/>
+            <field name="approval_status">sent</field>
+            <field name="stage_id" ref="project_stage_sent"/>
+            <field name="task_state">04_waiting_normal</field>
+        </record>
+        <record id="demo_rule_approved" model="project.approval.stage.rule">
+            <field name="project_id" ref="demo_project_approval_requirement"/>
+            <field name="approval_status">approved</field>
+            <field name="stage_id" ref="project_stage_approved"/>
+            <field name="task_state">03_approved</field>
+        </record>
+        <record id="demo_rule_rejected" model="project.approval.stage.rule">
+            <field name="project_id" ref="demo_project_approval_requirement"/>
+            <field name="approval_status">rejected</field>
+            <field name="stage_id" ref="project_stage_rejected"/>
+            <field name="task_state">02_changes_requested</field>
+        </record>
+
+        <!-- Task -->
+        <record id="demo_task_approval_requirement" model="project.task">
+            <field name="name">Diseño de Logotipo Corporativo</field>
+            <field name="project_id" ref="demo_project_approval_requirement"/>
+            <field name="stage_id" ref="project_stage_draft"/>
+            <field name="approval_note">Por favor revisa cuidadosamente las siguientes muestras. Una vez aprobadas, cualquier modificación adicional tendrá un costo extra.</field>
+            <field name="approval_conformity_text">Declaro bajo juramento que he revisado todas las muestras adjuntas en este documento, estoy conforme con cada una de ellas y procedo a firmar en señal de conformidad.</field>
+        </record>
+
+        <!-- Approval Requirement Line -->
+        <record id="demo_approval_requirement_line_1" model="project.approval.requirement.line">
+            <field name="task_id" ref="demo_task_approval_requirement"/>
+            <field name="caption">Opción 1: Diseño minimalista en tonos azules.</field>
+            <field name="image">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=</field>
+        </record>
+        
+        <record id="demo_approval_requirement_line_2" model="project.approval.requirement.line">
+            <field name="task_id" ref="demo_task_approval_requirement"/>
+            <field name="caption">Opción 2: Diseño clásico con tipografía serif.</field>
+            <field name="image">iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=</field>
+        </record>
+    </data>
+</odoo>

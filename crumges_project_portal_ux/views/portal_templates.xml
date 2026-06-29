@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 1. Override the list of projects to point to the new Info page and add new columns -->
+    <template id="portal_my_projects_inherit_ux" inherit_id="project.portal_my_projects">
+        <xpath expr="//a[@t-attf-href='/my/projects/#{project.id}']" position="attributes">
+            <attribute name="t-attf-href">/my/projects/#{project.id}/info</attribute>
+        </xpath>
+        
+        <!-- Add headers if they don't exist by injecting a thead before tbody -->
+        <xpath expr="//tbody" position="before">
+            <thead>
+                <tr>
+                    <th>Proyecto</th>
+                    <th>Estado</th>
+                    <th>Progreso</th>
+                    <th class="text-end">Tareas</th>
+                </tr>
+            </thead>
+        </xpath>
+
+        <!-- Inject cells for Status and Progress before the last column (Tasks) -->
+        <xpath expr="//tr[@t-foreach='projects']/td[hasclass('text-end')]" position="before">
+            <td class="align-middle">
+                <t t-if="project.last_update_status != 'to_define'">
+                    <t t-set="status_color" t-value="project.last_update_color"/>
+                    <span t-attf-class="badge rounded-pill text-bg-#{status_color == 20 and 'success' or status_color == 22 and 'warning' or status_color == 23 and 'danger' or status_color == 24 and 'dark' or 'info'}" t-field="project.last_update_status"/>
+                </t>
+            </td>
+            <td class="align-middle">
+                <t t-if="project.milestone_count > 0">
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" t-attf-style="width: #{project.milestone_progress}%;" t-att-aria-valuenow="project.milestone_progress" aria-valuemin="0" aria-valuemax="100"/>
+                        </div>
+                        <small class="text-muted"><t t-esc="project.milestone_progress"/>%</small>
+                    </div>
+                </t>
+            </td>
+        </xpath>
+    </template>
+
+    <!-- 2. The New Project Info Template -->
+    <template id="portal_project_info" name="Project Info">
+        <t t-call="portal.portal_layout">
+            <t t-set="title" t-value="project.name"/>
+
+            <div class="row">
+                <div class="col-12 col-md-4">
+                    <!-- Action buttons -->
+                    <div class="d-grid gap-2 mb-3">
+                        <a t-attf-href="/my/projects/#{project.id}" class="btn btn-primary">
+                            <i class="fa fa-tasks me-1"></i>Ver tareas
+                        </a>
+                    </div>
+
+                    <!-- Project Details Card -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title text-muted">Project Details</h5>
+                            <div class="mb-3" t-if="project.partner_id">
+                                <strong>Customer:</strong><br/>
+                                <span t-esc="project.partner_id.name"/>
+                            </div>
+                            <div class="mb-3" t-if="project.user_id">
+                                <strong>Project Manager:</strong><br/>
+                                <div class="d-flex align-items-center mt-1">
+                                    <img t-att-src="image_data_uri(project.user_id.avatar_128)" class="rounded-circle o_portal_contact_img me-2" alt="Avatar" style="width: 32px; height: 32px;"/>
+                                    <span t-esc="project.user_id.name"/>
+                                </div>
+                            </div>
+                            <div class="mb-3" t-if="project.tag_ids">
+                                <strong>Etiquetas:</strong><br/>
+                                <t t-foreach="project.tag_ids" t-as="tag">
+                                    <span t-attf-class="badge rounded-pill me-1 o_tag_color_#{tag.color or 0}">
+                                        <t t-esc="tag.name"/>
+                                    </span>
+                                </t>
+                            </div>
+                            <div class="mb-3" t-if="project.date_start or project.date">
+                                <strong>Fecha planeada:</strong><br/>
+                                <span t-if="project.date_start" t-field="project.date_start" t-options='{"widget": "date"}'/>
+                                <t t-if="project.date_start and project.date"> <i class="fa fa-long-arrow-right mx-1 text-muted"/> </t>
+                                <span t-if="project.date" t-field="project.date" t-options='{"widget": "date"}'/>
+                            </div>
+                            <div class="mb-3" t-if="project.milestone_count > 0">
+                                <strong>Progreso:</strong>
+                                <div class="progress mt-1" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar" t-attf-style="width: #{project.milestone_progress}%;" t-att-aria-valuenow="project.milestone_progress" aria-valuemin="0" aria-valuemax="100"/>
+                                </div>
+                                <small class="text-muted"><t t-esc="project.milestone_progress"/>% (<t t-esc="project.milestone_count_reached"/>/<t t-esc="project.milestone_count"/> Hitos)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-8">
+                    <div class="card mb-3">
+                        <div class="card-header bg-white d-flex align-items-center">
+                            <h3 class="mb-0 me-2"><t t-esc="project.name"/></h3>
+                            <t t-if="project.last_update_status != 'to_define'">
+                                <t t-set="status_color" t-value="project.last_update_color"/>
+                                <span t-attf-class="badge rounded-pill text-bg-#{status_color == 20 and 'success' or status_color == 22 and 'warning' or status_color == 23 and 'danger' or status_color == 24 and 'dark' or 'info'}" t-field="project.last_update_status"/>
+                            </t>
+                        </div>
+                        <div class="card-body">
+                            <t t-if="project.description">
+                                <h5 class="card-title text-muted">Project Description</h5>
+                                <div class="mb-4" t-out="project.description"/>
+                            </t>
+                            <t t-else="">
+                                <p class="text-muted">No description provided for this project.</p>
+                            </t>
+                            
+                            <!-- Milestones -->
+                            <t t-if="project.sudo().milestone_ids">
+                                <hr/>
+                                <h5 class="card-title text-muted mt-3 mb-3">Hitos del Proyecto</h5>
+                                <ul class="list-group list-group-flush mb-4 border rounded">
+                                    <t t-foreach="project.sudo().milestone_ids" t-as="milestone">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i t-if="milestone.is_reached" class="fa fa-check-circle text-success me-2"/>
+                                                <i t-else="" class="fa fa-circle-o text-muted me-2"/>
+                                                <span t-attf-class="#{milestone.is_reached and 'text-decoration-line-through text-muted' or ''}"><t t-esc="milestone.name"/></span>
+                                            </div>
+                                            <small class="text-muted" t-if="milestone.deadline">
+                                                <span t-field="milestone.deadline" t-options='{"widget": "date"}'/>
+                                            </small>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </t>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- 3. Fix breadcrumbs so the new page says the Project Name, and going to Tasks adds "Tasks" -->
+    <template id="portal_layout_inherit_ux" inherit_id="project.portal_layout">
+        <xpath expr="//li[@t-if=&quot;page_name in ['project_task', 'project_subtasks', 'project_recurrent_tasks'] and project&quot;]/a" position="attributes">
+            <!-- Ensure going back to project from tasks actually goes to the Info view -->
+            <attribute name="t-attf-href">/my/projects/{{ project.id }}/info?{{ keep_query() }}</attribute>
+        </xpath>
+        
+        <!-- Add breadcrumb logic for the new project_info page -->
+        <xpath expr="//li[@t-elif='project']" position="before">
+            <li t-if="page_name == 'project_info' and project" class="breadcrumb-item active text-truncate col-8 col-lg-10">
+                <t t-esc="project.name"/>
+            </li>
+            <li t-if="page_name == 'project' and project" class="breadcrumb-item">
+                <a t-attf-href="/my/projects/{{ project.id }}/info?{{ keep_query() }}"><t t-esc="project.name"/></a>
+            </li>
+        </xpath>
+        <xpath expr="//li[@t-elif='project']" position="replace">
+            <li t-elif="project and page_name not in ['project_info', 'project']" t-attf-class="breadcrumb-item #{'active ' if not project else ''} text-truncate col-8 col-lg-10">
+                <t t-esc="project.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <!-- 4. Add additional info to the task portal view -->
+    <template id="portal_my_task_inherit_ux" inherit_id="project.portal_my_task">
+        
+        <!-- Hide allocated_hours div if it is 0 to avoid printing 00:00 -->
+        <xpath expr="//div[@name='portal_my_task_allocated_hours']" position="attributes">
+            <attribute name="t-if">task.allocated_hours &gt; 0</attribute>
+        </xpath>
+
+        <!-- Add Tags and Planned Date into the first column of the task header -->
+        <xpath expr="//div[@name='portal_my_task_allocated_hours']" position="after">
+            <!-- Etiquetas -->
+            <div t-if="task.tag_ids">
+                <strong>Etiquetas:</strong> 
+                <t t-foreach="task.tag_ids" t-as="tag">
+                    <span t-attf-class="badge rounded-pill me-1 o_tag_color_#{tag.color or 0}">
+                        <t t-esc="tag.name"/>
+                    </span>
+                </t>
+            </div>
+            <!-- Fecha Planeada -->
+            <div t-if="'planned_date_begin' in task and task.planned_date_begin">
+                <strong>Fecha planeada:</strong> 
+                <span t-field="task.planned_date_begin" t-options='{"widget": "datetime"}'/>
+                <t t-if="'planned_date_end' in task and task.planned_date_end">
+                    <i class="fa fa-long-arrow-right mx-1 text-muted"/>
+                    <span t-field="task.planned_date_end" t-options='{"widget": "datetime"}'/>
+                </t>
+            </div>
+        </xpath>
+
+        <!-- Action buttons in the left sidebar navigation -->
+        <xpath expr="//div[@id='task-nav']" position="before">
+            <!-- Subtasks Button -->
+            <div class="d-grid gap-2 mb-2 w-100" t-if="task.subtask_count > 0 and task.project_id">
+                <a t-attf-href="/my/projects/#{task.project_id.id}/task/#{task.id}/subtasks?{{ keep_query() }}" class="btn btn-primary text-truncate">
+                    <i class="fa fa-tasks me-1"></i>Ver subtareas
+                    <span class="badge text-bg-light border text-dark ms-1" title="Subtareas completadas / total">
+                        <t t-esc="task.closed_subtask_count"/> / <t t-esc="task.subtask_count"/>
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Download PDF Button -->
+            <div class="d-grid gap-2 mb-4 w-100">
+                <a t-attf-href="/my/tasks/#{task.id}?report_type=pdf&amp;download=true" class="btn btn-light" title="Descargar">
+                    <i class="fa fa-download me-1"/> Descargar
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_project_task" model="ir.actions.report">
+        <field name="name">Detalle de Tarea</field>
+        <field name="model">project.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">crumges_project_portal_ux.report_project_task</field>
+        <field name="report_file">crumges_project_portal_ux.report_project_task</field>
+        <field name="print_report_name">'Tarea - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_project_task">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <h2 class="mt-4">
+                            <span>Tarea:</span>
+                            <span t-field="doc.name"/>
+                        </h2>
+                        <div class="row mt-4 mb-4" id="informations">
+                            <div class="col-7">
+                                <div t-if="doc.project_id" class="mb-2">
+                                    <i class="fa fa-folder-open text-primary me-1"/> <strong>Proyecto:</strong>
+                                    <span class="ms-1" t-field="doc.project_id"/>
+                                </div>
+                                <div t-if="doc.partner_id" class="mb-2">
+                                    <i class="fa fa-user text-primary me-1"/> <strong>Cliente:</strong>
+                                    <span class="ms-1" t-field="doc.partner_id"/>
+                                </div>
+                                <div t-if="doc.user_ids" class="mb-2">
+                                    <i class="fa fa-users text-primary me-1"/> <strong>Asignado a:</strong>
+                                    <span class="ms-1" t-esc="', '.join(doc.user_ids.mapped('name'))"/>
+                                </div>
+                                <t t-if="'planned_date_begin' in doc and doc.planned_date_begin">
+                                    <div class="mb-2">
+                                        <i class="fa fa-calendar text-primary me-1"/> <strong>Fecha Planeada:</strong>
+                                        <span class="ms-1">
+                                            <span t-field="doc.planned_date_begin" t-options='{"widget": "datetime"}'/>
+                                            <t t-if="doc.date_deadline">
+                                                <i class="fa fa-long-arrow-right mx-1 text-muted"/>
+                                                <span t-field="doc.date_deadline" t-options='{"widget": "datetime"}'/>
+                                            </t>
+                                        </span>
+                                    </div>
+                                </t>
+                                <t t-elif="doc.date_deadline">
+                                    <div class="mb-2">
+                                        <i class="fa fa-calendar text-primary me-1"/> <strong>Fecha Límite:</strong>
+                                        <span class="ms-1" t-field="doc.date_deadline" t-options='{"widget": "date"}'/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="col-5">
+                                <div t-if="doc.tag_ids" class="mb-2">
+                                    <i class="fa fa-tags text-primary me-1"/> <strong>Etiquetas:</strong>
+                                    <span class="ms-1" t-esc="', '.join(doc.tag_ids.mapped('name'))"/>
+                                </div>
+                                <div t-if="doc.stage_id" class="mb-2">
+                                    <i class="fa fa-columns text-primary me-1"/> <strong>Etapa:</strong>
+                                    <span class="ms-1" t-field="doc.stage_id"/>
+                                </div>
+                                <div t-if="doc.state" class="mb-2">
+                                    <i class="fa fa-check-circle text-primary me-1"/> <strong>Estado:</strong>
+                                    <span class="ms-1" t-field="doc.state"/>
+                                </div>
+                                <div t-if="doc.milestone_id" class="mb-2">
+                                    <i class="fa fa-bullseye text-primary me-1"/> <strong>Objetivo:</strong>
+                                    <span class="ms-1" t-field="doc.milestone_id.name"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <t t-if="not is_html_empty(doc.description)">
+                            <h4 class="mt-4 mb-2">Descripción</h4>
+                            <div t-field="doc.description"/>
+                        </t>
+
+                        <t t-if="doc.child_ids">
+                            <h4 class="mt-4 mb-2">Subtareas</h4>
+                            <table class="table table-sm table-borderless mt-4">
+                                <thead style="border-bottom: 2px solid #dee2e6;">
+                                    <tr>
+                                        <th class="fw-bold" style="width: 40%;"><strong>Título</strong></th>
+                                        <th class="fw-bold" style="width: 30%;"><strong>Asignados</strong></th>
+                                        <th class="fw-bold" style="width: 15%;"><strong>Etapa</strong></th>
+                                        <th class="fw-bold" style="width: 15%;"><strong>Estado</strong></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="doc.child_ids" t-as="subtask">
+                                        <tr style="border-bottom: 1px solid #dee2e6;">
+                                            <td class="pt-2 pb-2"><span t-field="subtask.name"/></td>
+                                            <td class="pt-2 pb-2"><span t-esc="', '.join(subtask.user_ids.mapped('name'))"/></td>
+                                            <td class="pt-2 pb-2"><span t-field="subtask.stage_id"/></td>
+                                            <td class="pt-2 pb-2"><span t-field="subtask.state"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="email_template_project_task" model="mail.template">
+            <field name="name">Tarea: Enviar por correo</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Detalle de la Tarea: {{ object.name }}</field>
+            <field name="email_to">{{ (object.partner_id.email_formatted or user.email_formatted) }}</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hola <t t-out="object.partner_id.name or ''">Acme Corp</t>,<br/><br/>
+        Adjuntamos los detalles de la tarea <strong><t t-out="object.name or ''">Piping Installation</t></strong>
+        <t t-if="object.project_id">
+            del proyecto <strong><t t-out="object.project_id.name or ''">Construcción de Casas</t></strong>
+        </t>.
+        <br/><br/>
+        Si tienes alguna pregunta, no dudes en contactarnos.
+        <br/><br/>
+        Saludos,<br/>
+        <t t-out="user.name or ''">Mitchell Admin</t>
+    </p>
+</div>
+            </field>
+            <field name="report_template_ids" eval="[(4, ref('crumges_project_portal_ux.action_report_project_task'))]"/>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

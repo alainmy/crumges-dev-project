@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_approval_requirement_page" name="Approval Requirement Portal">
+        <t t-call="portal.portal_layout">
+            <t t-set="no_footer" t-value="True"/>
+            <div id="wrap" class="container mt-4 mb-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h2 class="mb-0 text-center"><t t-esc="task.name"/></h2>
+                        <p class="text-muted text-center mt-2">Revisión de Muestras - <t t-esc="task.project_id.name"/></p>
+                    </div>
+                    <div class="card-body px-md-5">
+                        
+                        <!-- Status Alert -->
+                        <t t-if="task.approval_status == 'approved'">
+                            <div class="alert alert-success text-center">
+                                <i class="fa fa-check-circle fa-2x mb-2"></i>
+                                <h4>¡Documento Aprobado!</h4>
+                                <p>Este documento fue firmado y aprobado por <b><t t-esc="task.approval_signed_by"/></b> el <t t-esc="task.approval_signed_date"/>.</p>
+                                <a t-attf-href="/my/task/approval/#{task.id}/#{token}/pdf" class="btn btn-success mt-2">
+                                    <i class="fa fa-download"></i> Descargar Acta PDF
+                                </a>
+                            </div>
+                        </t>
+                        <t t-if="task.approval_status == 'rejected'">
+                            <div class="alert alert-warning text-center">
+                                <i class="fa fa-pencil fa-2x mb-2"></i>
+                                <h4>Revisión Solicitada</h4>
+                                <p>Motivo: <t t-esc="task.approval_rejection_reason"/></p>
+                            </div>
+                        </t>
+                        <t t-if="task.approval_status == 'discontinued'">
+                            <div class="alert alert-danger text-center">
+                                <i class="fa fa-times-circle fa-2x mb-2"></i>
+                                <h4>Tarea Cancelada</h4>
+                                <p>Motivo: <t t-esc="task.approval_rejection_reason"/></p>
+                            </div>
+                        </t>
+
+                        <!-- Customer Note -->
+                        <div class="alert alert-info mt-4" t-if="task.approval_note">
+                            <p class="mb-0" style="white-space: pre-wrap;"><t t-esc="task.approval_note"/></p>
+                        </div>
+
+                        <!-- Task Description (if enabled) -->
+                        <div class="mt-4 p-4 bg-light rounded shadow-sm" t-if="task.approval_content_type in ['description', 'both'] and task.description">
+                            <h5 class="border-bottom pb-2 mb-3">Task Details</h5>
+                            <div t-out="task.description"/>
+                        </div>
+
+                        <!-- Approval Images -->
+                        <div class="row mt-5" t-if="task.approval_content_type in ['images', 'both']">
+                            <t t-foreach="task.approval_line_ids" t-as="line">
+                                <div class="col-12 mb-5 text-center">
+                                    <img t-att-src="image_data_uri(line.image)" class="img-fluid rounded shadow-sm" style="max-height: 500px; object-fit: contain;"/>
+                                    <div class="mt-3 p-3 bg-light rounded text-start">
+                                        <p class="mb-0 text-muted"><t t-esc="line.caption"/></p>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- Signature Section (Only if Sent) -->
+                        <t t-if="task.approval_status in ['sent', 'draft']">
+                            <div class="mt-5 border-top pt-4">
+                                <p class="lead text-center fw-bold" style="white-space: pre-wrap;"><t t-esc="task.approval_conformity_text"/></p>
+                                
+                                <form t-attf-action="/my/task/approval/#{task.id}/#{token}/sign" method="post" id="approval_sign_form" class="mt-4">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="signature_image" id="signature_image_data"/>
+                                    
+                                    <div class="row justify-content-center">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="signed_by" class="form-label fw-bold">Nombre Completo</label>
+                                                <input type="text" class="form-control form-control-lg" id="signed_by" name="signed_by" required="1" placeholder="Ej. Juan Pérez"/>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Dibuja tu firma aquí</label>
+                                                <div class="border rounded bg-light" style="touch-action: none;">
+                                                    <canvas id="signature_pad" width="500" height="200" style="width: 100%; max-width: 500px; display: block; margin: 0 auto;"></canvas>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="clear_signature">
+                                                    <i class="fa fa-eraser"></i> Limpiar firma
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="d-grid gap-2 mt-4">
+                                                <button type="button" class="btn btn-success btn-lg" id="submit_approve_btn">
+                                                    <i class="fa fa-check"></i> Aceptar y Firmar
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                                    <i class="fa fa-pencil"></i> Solicitar Revisión
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger mt-2" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                                                    <i class="fa fa-times"></i> Cancelar Definitivamente
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </t>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reject Modal -->
+            <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form t-attf-action="/my/task/approval/#{task.id}/#{token}/reject" method="post">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-white">
+                                <h5 class="modal-title">Solicitar Revisión</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="reject_reason" class="form-label">Por favor, indícanos qué cambios necesitas:</label>
+                                    <textarea class="form-control" id="reject_reason" name="reject_reason" rows="4" required="1" placeholder="Ej. Cambiar el color del logo..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                                <button type="submit" class="btn btn-warning">Solicitar Cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cancel Modal -->
+            <div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                    <form t-attf-action="/my/task/approval/#{task.id}/#{token}/cancel" method="post">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">Cancelar Tarea</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-danger">
+                                    <strong>Atención:</strong> Si cancelas esta solicitud, ya no se continuará trabajando en esta tarea.
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cancel_reason" class="form-label">Por favor, indícanos el motivo de la cancelación:</label>
+                                    <textarea class="form-control" id="cancel_reason" name="cancel_reason" rows="4" required="1" placeholder="Ej. El proyecto se detuvo..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                                <button type="submit" class="btn btn-danger">Cancelar Definitivamente</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Signature Pad Script -->
+            <script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function() {
+                    var canvas = document.getElementById('signature_pad');
+                    if (!canvas) return;
+                    var ctx = canvas.getContext('2d');
+                    var isDrawing = false;
+                    
+                    function getMousePos(canvas, evt) {
+                        var rect = canvas.getBoundingClientRect();
+                        return {
+                            x: (evt.clientX || evt.touches[0].clientX) - rect.left,
+                            y: (evt.clientY || evt.touches[0].clientY) - rect.top
+                        };
+                    }
+                    
+                    function startDrawing(e) {
+                        isDrawing = true;
+                        var pos = getMousePos(canvas, e);
+                        ctx.beginPath();
+                        ctx.moveTo(pos.x, pos.y);
+                        e.preventDefault();
+                    }
+                    
+                    function draw(e) {
+                        if (!isDrawing) return;
+                        var pos = getMousePos(canvas, e);
+                        ctx.lineTo(pos.x, pos.y);
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        e.preventDefault();
+                    }
+                    
+                    function stopDrawing() {
+                        isDrawing = false;
+                    }
+                    
+                    canvas.addEventListener('mousedown', startDrawing);
+                    canvas.addEventListener('mousemove', draw);
+                    canvas.addEventListener('mouseup', stopDrawing);
+                    canvas.addEventListener('mouseout', stopDrawing);
+                    
+                    canvas.addEventListener('touchstart', startDrawing, {passive: false});
+                    canvas.addEventListener('touchmove', draw, {passive: false});
+                    canvas.addEventListener('touchend', stopDrawing);
+                    
+                    document.getElementById('clear_signature').addEventListener('click', function() {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    });
+
+                    document.getElementById('submit_approve_btn').addEventListener('click', function(e) {
+                        var nameInput = document.getElementById('signed_by').value.trim();
+                        if (!nameInput) {
+                            alert('Por favor, ingresa tu nombre completo.');
+                            return;
+                        }
+                        
+                        var blank = document.createElement('canvas');
+                        blank.width = canvas.width;
+                        blank.height = canvas.height;
+                        if (canvas.toDataURL() == blank.toDataURL()) {
+                            alert('Por favor, dibuja tu firma en el recuadro.');
+                            return;
+                        }
+                        
+                        document.getElementById('signature_image_data').value = canvas.toDataURL("image/png");
+                        document.getElementById('approval_sign_form').submit();
+                    });
+                });
+            </script>
+        </t>
+    </template>
+
+    <!-- Inherit standard Task Portal View to add the "Firmar y aprobar" button -->
+    <template id="portal_my_task_approval_button" inherit_id="project.portal_my_task">
+        <!-- Add button to the sidebar entries -->
+        <xpath expr="//div[@id='task-nav']" position="before">
+            <t t-if="task.use_approval_requirements and task.require_approval and task.approval_status == 'sent'">
+                <div class="d-grid gap-2 mb-3 w-100">
+                    <a role="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalaccept" href="#">
+                        <i class="fa fa-check"/> Firmar y aprobar
+                    </a>
+                </div>
+            </t>
+        </xpath>
+        
+        <!-- Add buttons to the bottom of the main content area -->
+        <xpath expr="//div[@id='card_body']" position="inside">
+            <t t-if="task.use_approval_requirements and task.require_approval and task.approval_status == 'sent'">
+                <div class="d-flex justify-content-center gap-1 d-print-none mt-5 mb-4" name="task_approval_actions">
+                    <div class="col-sm-auto mt8">
+                        <a role="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalaccept" href="#">
+                            <i class="fa fa-check"/> Firmar
+                        </a>
+                    </div>
+                    <div class="col-sm-auto mt8">
+                        <a role="button" class="btn btn-light" href="#task_chat">
+                            <i class="fa fa-comment"/> Comentarios
+                        </a>
+                    </div>
+                    <div class="col-sm-auto mt8">
+                        <a role="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modaldecline" href="#">
+                            <i class="fa fa-pencil"/> Revisar
+                        </a>
+                    </div>
+                    <div class="col-sm-auto mt8">
+                        <a role="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalcancel" href="#">
+                            <i class="fa fa-times"/> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        
+        <xpath expr="//div[@id='task_chat']" position="before">
+            <!-- Signature details -->
+            <t t-if="task.use_approval_requirements and task.is_approval_signed">
+                <div class="mb-4 mt-4" id="approval_signature_details">
+                    <h5 class="text-success border-bottom pb-2"><i class="fa fa-pencil-square-o"></i> Detalles de la Aprobación</h5>
+                    <t t-if="task.approval_conformity_text">
+                        <p class="fst-italic text-muted mb-3">"<span t-esc="task.approval_conformity_text"/>"</p>
+                    </t>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-4 mb-3 mb-md-0">
+                            <strong>Firmado por:</strong><br/>
+                            <span t-esc="task.approval_signed_by"/>
+                        </div>
+                        <div class="col-12 col-md-4 mb-3 mb-md-0">
+                            <strong>Fecha:</strong><br/>
+                            <span t-field="task.approval_signed_date" t-options='{"widget": "datetime"}'/>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <img t-if="task.approval_signature" t-att-src="image_data_uri(task.approval_signature)" style="max-height: 80px;" alt="Firma"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[@id='task_content']" position="inside">
+            <!-- Modal Accept (Signature) -->
+            <div role="dialog" class="modal fade" id="modalaccept">
+                <div class="modal-dialog">
+                    <form id="accept" method="POST" t-attf-action="/my/task/approval/#{task.id}/#{task.approval_token}/sign" class="js_accept_json modal-content js_website_submit_form">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <header class="modal-header">
+                            <h4 class="modal-title">Validar la tarea</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </header>
+                        <main class="modal-body" id="sign-dialog">
+                            <t t-if="task.approval_note">
+                                <div class="alert alert-info mb-3">
+                                    <strong>Notas:</strong>
+                                    <p class="mb-0 text-break" t-esc="task.approval_note"/>
+                                </div>
+                            </t>
+                            
+                            <p>
+                                Al firmar, confirma la aceptación para la tarea <b t-field="task.name"/>.
+                            </p>
+                            
+                            <t t-if="task.approval_conformity_text">
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="conformityCheckbox"/>
+                                    <label class="form-check-label text-muted" for="conformityCheckbox">
+                                        <t t-esc="task.approval_conformity_text"/>
+                                    </label>
+                                </div>
+                            </t>
+
+                            <div id="signature_wrapper" t-att-style="'opacity: 0.5; pointer-events: none;' if task.approval_conformity_text else ''">
+                                <t t-call="portal.signature_form">
+                                    <t t-set="call_url" t-value="'/my/task/approval/%s/%s/sign' % (task.id, task.approval_token)"/>
+                                    <t t-set="default_name" t-value="request.env.user.partner_id.name"/>
+                                </t>
+                            </div>
+                            
+                            <t t-if="task.approval_conformity_text">
+                                <script type="text/javascript">
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var checkbox = document.getElementById('conformityCheckbox');
+                                        var wrapper = document.getElementById('signature_wrapper');
+                                        
+                                        if (checkbox &amp;&amp; wrapper) {
+                                            // Ensure it is disabled on load
+                                            wrapper.style.opacity = '0.5';
+                                            wrapper.style.pointerEvents = 'none';
+                                            
+                                            // Wait a little bit for the DOM to fully render the submit button
+                                            setTimeout(function() {
+                                                var submitBtn = wrapper.querySelector('button[type="submit"]');
+                                                if (submitBtn) {
+                                                    submitBtn.disabled = true;
+                                                }
+                                                
+                                                checkbox.addEventListener('change', function () {
+                                                    if (this.checked) {
+                                                        wrapper.style.opacity = '1';
+                                                        wrapper.style.pointerEvents = 'auto';
+                                                        if (submitBtn) submitBtn.disabled = false;
+                                                    } else {
+                                                        wrapper.style.opacity = '0.5';
+                                                        wrapper.style.pointerEvents = 'none';
+                                                        if (submitBtn) submitBtn.disabled = true;
+                                                    }
+                                                });
+                                            }, 100);
+                                        }
+                                    });
+                                </script>
+                            </t>
+                        </main>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Decline (Reject) -->
+            <div role="dialog" class="modal fade" id="modaldecline">
+                <div class="modal-dialog">
+                    <form id="decline" method="POST" t-attf-action="/my/task/approval/#{task.id}/#{task.approval_token}/reject" class="modal-content">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <header class="modal-header">
+                            <h4 class="modal-title">Solicitar Revisión</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </header>
+                        <main class="modal-body">
+                            <p>
+                                Dinos qué cambios necesitas.
+                            </p>
+                            <textarea rows="4" name="reject_reason" required="" placeholder="Tus comentarios..." class="form-control" />
+                        </main>
+                        <footer class="modal-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fa fa-pencil"></i> Solicitar Cambios
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                Volver
+                            </button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal Cancel (Discontinue) -->
+            <div role="dialog" class="modal fade" id="modalcancel">
+                <div class="modal-dialog">
+                    <form id="cancel" method="POST" t-attf-action="/my/task/approval/#{task.id}/#{task.approval_token}/cancel" class="modal-content">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <header class="modal-header">
+                            <h4 class="modal-title">Cancelar Tarea</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </header>
+                        <main class="modal-body">
+                            <div class="alert alert-danger">
+                                <strong>Atención:</strong> Si cancelas esta solicitud, ya no se continuará trabajando en esta tarea.
+                            </div>
+                            <p>
+                                Por favor, indícanos el motivo de la cancelación.
+                            </p>
+                            <textarea rows="4" name="cancel_reason" required="" placeholder="Motivo de cancelación..." class="form-control" />
+                        </main>
+                        <footer class="modal-footer">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa fa-times"></i> Cancelar Definitivamente
+                            </button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                                Volver
+                            </button>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+        </xpath>
+        
+        <xpath expr="//div[@id='card_header']" position="before">
+            <t t-if="task.use_approval_requirements">
+                <!-- Pending Approval Alert -->
+                <div t-if="task.approval_status == 'sent'" class="alert alert-warning alert-dismissible d-print-none" role="status">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <strong>Acción Requerida:</strong><br/>
+                    Esta tarea requiere tu revisión y aprobación para continuar con los siguientes pasos.
+                </div>
+                
+                <!-- Approved Alert -->
+                <div t-if="task.approval_status == 'approved'" class="alert alert-success alert-dismissible d-print-none" role="status">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <strong>¡Aprobada!</strong><br/>
+                    Gracias por tu confirmación. La tarea ha sido validada y firmada correctamente.
+                </div>
+                
+                <!-- Rejected Alert -->
+                <div t-if="task.approval_status == 'rejected'" class="alert alert-warning alert-dismissible d-print-none" role="status">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <strong>Revisión Pendiente:</strong><br/>
+                    Hemos recibido tus comentarios de revisión. Vamos a realizar los ajustes necesarios.
+                </div>
+
+                <!-- Discontinued Alert -->
+                <div t-if="task.approval_status == 'discontinued'" class="alert alert-danger alert-dismissible d-print-none" role="status">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <strong>Tarea Cancelada:</strong><br/>
+                    El trabajo en esta tarea ha sido descontinuado definitivamente.<br/>
+                    <strong>Motivo: </strong> <t t-esc="task.approval_rejection_reason"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

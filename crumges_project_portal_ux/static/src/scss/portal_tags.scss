@@ -1,0 +1,34 @@
+/* 
+   Colores de Etiquetas (Tags) de Odoo
+   Portados para su uso en el Frontend (Portal)
+*/
+
+// Color 0 es el fallback/gris claro.
+.o_tag_color_0 {
+    background-color: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+}
+
+// Colores 1 al 11 corresponden a la paleta estándar de Odoo en el backend.
+$o-tag-colors: (
+    1: #F06050,  // Rojo
+    2: #F4A460,  // Naranja
+    3: #F7CD1F,  // Amarillo
+    4: #6CC1ED,  // Celeste
+    5: #814968,  // Morado Oscuro
+    6: #EB7E7F,  // Salmón
+    7: #2C8397,  // Cerceta (Teal)
+    8: #475577,  // Azul oscuro/Grisáceo
+    9: #D6145F,  // Magenta
+    10: #30C381, // Verde esmeralda
+    11: #9365B8  // Púrpura claro
+);
+
+@each $index, $color in $o-tag-colors {
+    .o_tag_color_#{$index} {
+        background-color: $color !important;
+        // La mayoría de los colores de Odoo usan texto blanco por contraste
+        color: #FFFFFF !important;
+    }
+}

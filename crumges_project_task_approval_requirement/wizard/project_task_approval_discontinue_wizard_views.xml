@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_task_approval_discontinue_wizard_form" model="ir.ui.view">
+        <field name="name">project.task.approval.discontinue.wizard.form</field>
+        <field name="model">project.task.approval.discontinue.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cancelar Tarea">
+                <div class="alert alert-danger" role="alert">
+                    <strong>Atención:</strong> Si cancelas esta solicitud, ya no se continuará trabajando en esta tarea.
+                </div>
+                <group>
+                    <field name="reason" placeholder="Indique el motivo de la cancelación..." required="1"/>
+                </group>
+                <footer>
+                    <button string="Cancelar Definitivamente" name="action_discontinue" type="object" class="btn-danger"/>
+                    <button string="Volver" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_task_approval_discontinue_wizard" model="ir.actions.act_window">
+        <field name="name">Cancelar Tarea</field>
+        <field name="res_model">project.task.approval.discontinue.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

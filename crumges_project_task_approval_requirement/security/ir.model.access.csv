@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_approval_requirement_line,project.approval.requirement.line,model_project_approval_requirement_line,base.group_user,1,1,1,1
+access_approval_requirement_line_user,project.approval.requirement.line.user,model_project_approval_requirement_line,project.group_project_user,1,1,1,1
+access_project_task_approval_reject_wizard_user,project.task.approval.reject.wizard.user,model_project_task_approval_reject_wizard,project.group_project_user,1,1,1,1
+access_project_task_approval_discontinue_wizard_user,project.task.approval.discontinue.wizard.user,model_project_task_approval_discontinue_wizard,project.group_project_user,1,1,1,1
+access_project_approval_stage_rule_manager,project.approval.stage.rule.manager,model_project_approval_stage_rule,project.group_project_manager,1,1,1,1
+access_project_approval_stage_rule_user,project.approval.stage.rule.user,model_project_approval_stage_rule,project.group_project_user,1,0,0,0

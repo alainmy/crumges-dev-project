@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_task_approval_reject_wizard_form" model="ir.ui.view">
+        <field name="name">project.task.approval.reject.wizard.form</field>
+        <field name="model">project.task.approval.reject.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Solicitar Revisión">
+                <group>
+                    <field name="reason" placeholder="Indique qué cambios son necesarios..." required="1"/>
+                </group>
+                <footer>
+                    <button string="Solicitar Cambios" name="action_reject" type="object" class="btn-warning"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_task_approval_reject_wizard" model="ir.actions.act_window">
+        <field name="name">Solicitar Revisión</field>
+        <field name="res_model">project.task.approval.reject.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_project_task_approval" inherit_id="crumges_project_portal_ux.report_project_task">
+        <xpath expr="//div[@id='informations']" position="after">
+            <t t-if="doc.use_approval_requirements">
+                <t t-set="alert_text" t-value="''"/>
+                <t t-set="alert_class" t-value="''"/>
+                
+                <t t-if="doc.approval_status == 'draft' and doc.require_approval">
+                    <t t-set="alert_text" t-value="'Requerimiento de Aprobación'"/>
+                    <t t-set="alert_class" t-value="'alert-info'"/>
+                </t>
+                <t t-elif="doc.approval_status == 'sent'">
+                    <t t-set="alert_text" t-value="'Aprobación Enviada'"/>
+                    <t t-set="alert_class" t-value="'alert-warning'"/>
+                </t>
+                <t t-elif="doc.approval_status == 'approved'">
+                    <t t-set="alert_text" t-value="'Aprobado'"/>
+                    <t t-set="alert_class" t-value="'alert-success'"/>
+                </t>
+                <t t-elif="doc.approval_status == 'rejected'">
+                    <t t-set="alert_text" t-value="'Revisión Solicitada'"/>
+                    <t t-set="alert_class" t-value="'alert-warning'"/>
+                </t>
+                <t t-elif="doc.approval_status == 'discontinued'">
+                    <t t-set="alert_text" t-value="'Tarea Cancelada'"/>
+                    <t t-set="alert_class" t-value="'alert-danger'"/>
+                </t>
+                
+                <t t-if="alert_text">
+                    <div t-attf-class="alert #{alert_class} mt-3 mb-3 text-center fw-bold" role="alert" style="font-size: 16px; border-radius: 5px; padding: 10px;">
+                        <span t-esc="alert_text"/>
+                        <t t-if="doc.approval_status in ['rejected', 'discontinued'] and doc.approval_rejection_reason">
+                            <br/>
+                            <span style="font-size: 14px; font-weight: normal;">Motivo: <t t-esc="doc.approval_rejection_reason"/></span>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <t t-if="doc.use_approval_requirements and doc.is_approval_signed">
+                <div class="mt-5" style="page-break-inside: avoid;">
+                    <h4 class="mb-3" style="border-bottom: 2px solid #dee2e6; padding-bottom: 5px;">Detalles de la Aprobación</h4>
+                    
+                    <t t-if="doc.approval_conformity_text">
+                        <div class="mb-3 text-muted" style="font-style: italic;">
+                            "<span t-esc="doc.approval_conformity_text"/>"
+                        </div>
+                    </t>
+                    
+                    <table class="table table-borderless table-sm mt-3 w-100">
+                        <tr>
+                            <td style="width: 50%;">
+                                <strong>Firmado por:</strong><br/>
+                                <span t-esc="doc.approval_signed_by"/>
+                            </td>
+                            <td style="width: 50%;">
+                                <strong>Fecha:</strong><br/>
+                                <span t-field="doc.approval_signed_date" t-options='{"widget": "datetime"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <img t-if="doc.approval_signature" t-att-src="image_data_uri(doc.approval_signature)" style="max-height: 80px;" alt="Firma"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </template>
+</odoo>

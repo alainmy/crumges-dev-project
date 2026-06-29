@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Template for Activation of Approval Requirement -->
+        <record id="mail_template_task_approval_required" model="mail.template">
+            <field name="name">Project Task: Approval Requirement Activated</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Aviso: La tarea {{ object.name }} requerirá aprobación próximamente</field>
+            <field name="email_from">{{ object.user_ids and object.user_ids[0].email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Notificación enviada cuando se activa el requerimiento de aprobación de una tarea</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimado/a <t t-out="object.partner_id.name or 'Cliente'"></t>,<br/><br/>
+        Queremos informarle que la tarea <strong><t t-out="object.name or ''"></t></strong> de su proyecto ha sido marcada para requerir de su revisión y aprobación más adelante.<br/><br/>
+        Nuestro equipo le notificará cuando el contenido esté listo para su revisión final. Por favor, esté atento/a a las próximas actualizaciones.<br/><br/>
+        Si tiene alguna duda, puede responder a este correo.<br/><br/>
+        Saludos cordiales,<br/>
+        El equipo de <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Template for Sending Approval Request -->
+        <record id="mail_template_task_approval_sent" model="mail.template">
+            <field name="name">Project Task: Approval Requested</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Revisión Requerida: {{ object.name }}</field>
+            <field name="email_from">{{ object.user_ids and object.user_ids[0].email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Notificación enviada cuando se envía formalmente la solicitud de aprobación</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimado/a <t t-out="object.partner_id.name or 'Cliente'"></t>,<br/><br/>
+        La tarea <strong><t t-out="object.name or ''"></t></strong> está lista para su revisión y aprobación formal.<br/><br/>
+        <t t-if="object.approval_note">
+            <em>Nota del equipo:</em> <t t-out="object.approval_note"></t><br/><br/>
+        </t>
+        Por favor, ingrese al portal utilizando el botón inferior para revisar los detalles y brindar su firma de aprobación.<br/><br/>
+        <div style="text-align: center; margin-top: 16px;">
+            <a t-attf-href="/my/task/{{ object.id }}?access_token={{ object.access_token }}" style="padding: 8px 16px 8px 16px; font-size: 14px; color: #FFFFFF; text-decoration: none !important; background-color: #875A7B; border: 0px solid #875A7B; border-radius:3px">
+                Ir a la Tarea
+            </a>
+        </div><br/><br/>
+        Saludos cordiales,<br/>
+        El equipo de <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Template for Task Approved -->
+        <record id="mail_template_task_approval_approved" model="mail.template">
+            <field name="name">Project Task: Approval Confirmed</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Aprobación Confirmada: {{ object.name }}</field>
+            <field name="email_from">{{ object.user_ids and object.user_ids[0].email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Notificación enviada cuando el cliente aprueba la tarea</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimado/a <t t-out="object.partner_id.name or 'Cliente'"></t>,<br/><br/>
+        Le confirmamos que hemos recibido satisfactoriamente su aprobación para la tarea <strong><t t-out="object.name or ''"></t></strong> el día <t t-out="object.approval_signed_date"></t>.<br/><br/>
+        Nuestro equipo procederá con los siguientes pasos del proyecto.<br/><br/>
+        Gracias por su tiempo.<br/><br/>
+        Saludos cordiales,<br/>
+        El equipo de <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Template for Task Rejected (Revision) -->
+        <record id="mail_template_task_approval_rejected" model="mail.template">
+            <field name="name">Project Task: Approval Revision Requested</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Revisión Solicitada: {{ object.name }}</field>
+            <field name="email_from">{{ object.user_ids and object.user_ids[0].email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Notificación enviada cuando se solicitan cambios en una tarea</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimado/a <t t-out="object.partner_id.name or 'Cliente'"></t>,<br/><br/>
+        Le informamos que se han solicitado cambios o una revisión para la tarea <strong><t t-out="object.name or ''"></t></strong>.<br/><br/>
+        <strong>Motivo de la Revisión:</strong><br/>
+        <t t-out="object.approval_rejection_reason or 'No se especificó un motivo'"></t><br/><br/>
+        Nuestro equipo revisará el caso y realizará los ajustes necesarios.<br/><br/>
+        Saludos cordiales,<br/>
+        El equipo de <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Template for Task Discontinued -->
+        <record id="mail_template_task_approval_discontinued" model="mail.template">
+            <field name="name">Project Task: Approval Discontinued</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">Tarea Cancelada: {{ object.name }}</field>
+            <field name="email_from">{{ object.user_ids and object.user_ids[0].email_formatted or user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Notificación enviada cuando una tarea es cancelada definitivamente</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Estimado/a <t t-out="object.partner_id.name or 'Cliente'"></t>,<br/><br/>
+        Le informamos que el trabajo y la solicitud de aprobación para la tarea <strong><t t-out="object.name or ''"></t></strong> han sido cancelados definitivamente.<br/><br/>
+        <strong>Motivo de la Cancelación:</strong><br/>
+        <t t-out="object.approval_rejection_reason or 'No se especificó un motivo'"></t><br/><br/>
+        Si tiene alguna duda, por favor contáctenos.<br/><br/>
+        Saludos cordiales,<br/>
+        El equipo de <t t-out="object.company_id.name or ''"></t>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>
