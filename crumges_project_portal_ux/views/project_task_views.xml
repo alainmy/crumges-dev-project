@@ -1,30 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Action to open mail compose wizard -->
-    <record id="action_project_task_send" model="ir.actions.act_window">
-        <field name="name">Enviar por correo</field>
-        <field name="res_model">mail.compose.message</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
-        <field name="context">{
-            'default_model': 'project.task',
-            'default_res_ids': active_ids,
-            'default_template_id': ref('crumges_project_portal_ux.email_template_project_task'),
-            'default_composition_mode': 'comment',
-            'default_email_layout_xmlid': 'mail.mail_notification_layout_with_responsible_signature',
-            'force_email': True
-        }</field>
-        <field name="binding_model_id" ref="project.model_project_task"/>
-        <field name="binding_view_types">form</field>
-    </record>
-
     <record id="view_task_form2_inherit_ux" model="ir.ui.view">
         <field name="name">project.task.form.inherit.ux</field>
         <field name="model">project.task</field>
         <field name="inherit_id" ref="project.view_task_form2"/>
         <field name="arch" type="xml">
             <xpath expr="//header" position="inside">
-                <button name="%(crumges_project_portal_ux.action_project_task_send)d" string="Enviar por correo" type="action" class="btn-primary" data-hotkey="q"/>
+                <button name="action_send_mail_ux" string="Enviar por correo" type="object" class="btn-primary" data-hotkey="q"/>
             </xpath>
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button name="action_preview_task" type="object" class="oe_stat_button" icon="fa-globe">
