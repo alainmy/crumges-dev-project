@@ -165,6 +165,11 @@
     <!-- 4. Add additional info to the task portal view -->
     <template id="portal_my_task_inherit_ux" inherit_id="project.portal_my_task">
         
+        <!-- Add State label next to the state widget icon -->
+        <xpath expr="//div[hasclass('float-end')]" position="inside">
+            <small class="ms-1 text-muted" t-esc="dict(task.fields_get(allfields=['state'])['state']['selection'])[task.state]"/>
+        </xpath>
+        
         <!-- Hide allocated_hours div if it is 0 to avoid printing 00:00 -->
         <xpath expr="//div[@name='portal_my_task_allocated_hours']" position="attributes">
             <attribute name="t-if">task.allocated_hours &gt; 0</attribute>
