@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_trello_inherit" model="ir.ui.view">
+        <field name="name">res.users.form.trello.inherit</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Trello" name="trello_sync">
+                    <group>
+                        <group string="Credenciales">
+                            <field name="trello_api_key"/>
+                            <field name="trello_token"/>
+                        </group>
+                        <group string="Configuración">
+                            <field name="trello_sync_enabled" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

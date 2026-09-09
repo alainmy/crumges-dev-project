@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form2_checklist" model="ir.ui.view">
+        <field name="name">project.task.form.checklist</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="%(crumges_project_checklist_trello.action_project_task_checklist_wizard)d" type="action" class="oe_stat_button" icon="fa-check-square-o" context="{'default_task_id': id}" invisible="not trello_checklist_summary">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Checklists</span>
+                        <span class="o_stat_value">
+                            <field name="trello_checklist_summary"/>
+                        </span>
+                    </div>
+                </button>
+            </div>
+            <!-- Sección de Checklists después de la descripción -->
+            <xpath expr="//page[@name='description_page']" position="after">
+                <page name="checklist_page" string="Checklists">
+                    <field name="checklist_line_ids" context="{'default_task_id': id}">
+                        <list string="Checklists" editable="bottom" delete="0" decoration-bf="display_type == 'line_section'" decoration-info="display_type == 'line_section'">
+                            <control>
+                                <create name="add_item_control" string="Añadir ítem"/>
+                                <button name="%(crumges_project_checklist_trello.action_project_task_checklist_wizard)d" type="action" string="Añadir Checklist" context="{'default_task_id': parent.id}" class="btn-link"/>
+                            </control>
+                            <field name="sequence" widget="handle"/>
+                            <field name="display_type" column_invisible="True"/>
+                            <field name="is_checked" widget="boolean" invisible="display_type != False"/>
+                            <field name="name" string="Checklist / Elemento"/>
+                            <field name="section_progress" string="Progreso" readonly="1" invisible="display_type != 'line_section'"/>
+                            <button name="action_delete_line" type="object" icon="fa-trash" title="Eliminar" confirm="¿Estás seguro de querer eliminar este registro? Si es un Checklist, también se eliminarán permanentemente todos los ítems que contenga."/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_kanban_checklist" model="ir.ui.view">
+        <field name="name">project.task.kanban.checklist</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='priority']" position="after">
+                <t t-if="record.trello_checklist_summary.raw_value">
+                    <div class="me-2 d-flex align-items-center" title="Checklist Progress">
+                        <i class="fa fa-check-square-o me-1" role="img" aria-label="Checklist" title="Checklist"/>
+                        <field name="trello_checklist_summary"/>
+                    </div>
+                </t>
+            </xpath>
+        </field>
+    </record>
+</odoo>

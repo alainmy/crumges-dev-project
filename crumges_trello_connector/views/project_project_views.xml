@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edit_project_trello_inherit" model="ir.ui.view">
+        <field name="name">project.project.form.trello.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_archive_trello_board" type="object" string="Archivar Tablero Trello" class="oe_highlight" invisible="stage_fold == False or trello_board_reference == False"/>
+                <button name="action_trello_sync_now" type="object" string="Sincronizar con Trello" class="oe_highlight" invisible="trello_sync == False" groups="base.group_no_one"/>
+                <field name="stage_fold" invisible="1"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Trello" name="trello_sync_page">
+                    <group>
+                        <group>
+                            <field name="trello_sync" widget="boolean_toggle"/>
+                            <field name="trello_board_id" 
+                                   invisible="trello_sync == False" 
+                                   readonly="trello_board_reference != False" />
+                            <field name="trello_board_reference" readonly="1" invisible="1" />
+                            <field name="trello_board_url" 
+                                   widget="url" 
+                                   readonly="1" 
+                                   invisible="trello_board_url == False or trello_sync == False"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

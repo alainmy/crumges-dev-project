@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="trello_file_type_pdf" model="trello.file.type">
+            <field name="name">Documento PDF</field>
+            <field name="extension">.pdf</field>
+            <field name="mimetype">application/pdf</field>
+        </record>
+        <record id="trello_file_type_png" model="trello.file.type">
+            <field name="name">Imagen PNG</field>
+            <field name="extension">.png</field>
+            <field name="mimetype">image/png</field>
+        </record>
+        <record id="trello_file_type_jpg" model="trello.file.type">
+            <field name="name">Imagen JPG</field>
+            <field name="extension">.jpg</field>
+            <field name="mimetype">image/jpeg</field>
+        </record>
+        <record id="trello_file_type_doc" model="trello.file.type">
+            <field name="name">Documento Word</field>
+            <field name="extension">.doc</field>
+            <field name="mimetype">application/msword</field>
+        </record>
+        <record id="trello_file_type_docx" model="trello.file.type">
+            <field name="name">Documento Word (Moderno)</field>
+            <field name="extension">.docx</field>
+            <field name="mimetype">application/vnd.openxmlformats-officedocument.wordprocessingml.document</field>
+        </record>
+        <record id="trello_file_type_xls" model="trello.file.type">
+            <field name="name">Hoja de Cálculo Excel</field>
+            <field name="extension">.xls</field>
+            <field name="mimetype">application/vnd.ms-excel</field>
+        </record>
+        <record id="trello_file_type_xlsx" model="trello.file.type">
+            <field name="name">Hoja de Cálculo Excel (Moderno)</field>
+            <field name="extension">.xlsx</field>
+            <field name="mimetype">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</field>
+        </record>
+    </data>
+</odoo>

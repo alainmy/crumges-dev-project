@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_trello_file_type_tree" model="ir.ui.view">
+        <field name="name">trello.file.type.tree</field>
+        <field name="model">trello.file.type</field>
+        <field name="arch" type="xml">
+            <list string="Tipos de Archivo Trello" editable="bottom">
+                <field name="name"/>
+                <field name="extension"/>
+                <field name="mimetype"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_trello_file_type" model="ir.actions.act_window">
+        <field name="name">Tipos de Archivo Trello</field>
+        <field name="res_model">trello.file.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

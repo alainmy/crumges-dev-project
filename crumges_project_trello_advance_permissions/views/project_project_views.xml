@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="edit_project_trello_permissions" model="ir.ui.view">
+        <field name="name">project.project.form.trello.permissions</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='settings']" position="after">
+                <page name="trello_permissions" string="Permisos Trello">
+                    <group>
+                        <group string="Operaciones con Tareas">
+                            <field name="trello_allow_create_task" widget="boolean_toggle"/>
+                            <field name="trello_allow_move_task" widget="boolean_toggle"/>
+                            <field name="trello_allow_finish_task" widget="boolean_toggle"/>
+                            <field name="trello_allow_archive_task" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Edición de Contenido">
+                            <field name="trello_allow_change_date" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Checklists">
+                            <field name="trello_allow_check_checklist" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Etiquetas">
+                            <field name="trello_allowed_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </group>
+                        <group string="Archivos Adjuntos">
+                            <field name="trello_allowed_file_type_ids" widget="many2many_tags"/>
+                            <label for="trello_max_file_size" string="Tamaño Máximo"/>
+                            <div class="o_row">
+                                <field name="trello_max_file_size"/>
+                                <field name="trello_max_size_unit"/>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
