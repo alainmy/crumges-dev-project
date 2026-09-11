@@ -193,14 +193,18 @@ class ResUsers(models.Model):
     def _process_trello_webhook_event(self, action_data):
         card_data = action_data.get('data', {}).get('card', {})
         action_type = action_data.get('type')
+        
+        # ANTÍDOTO GLOBAL PARA BUCLES INFINITOS:
+        # Si la acción en Trello fue realizada por una App/API (incluyendo Odoo), Trello envía 'appCreator'.
+        # Si la acción fue manual en la interfaz web/móvil de Trello, 'appCreator' es None o no existe.
+        # Ignoramos todos los webhooks de API para evitar que Odoo reaccione a sus propios ecos.
+        if action_data.get('appCreator'):
+            return
 
         trello_member_id = action_data.get('memberCreator', {}).get('id')
         user = self.env['res.users'].sudo().search([('trello_member_id', '=', trello_member_id)], limit=1)
         if not user or not user.trello_token:
             user = self.env['res.users'].sudo().search([('trello_token', '!=', False)], limit=1)
-
-
-        # Eventos de Tablero
         if action_type == 'updateBoard':
             board_data = action_data.get('data', {}).get('board', {})
             board_id = board_data.get('id')
