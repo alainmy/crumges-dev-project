@@ -11,7 +11,6 @@
         'base',
         'project',
         'queue_job',
-        'queue_job_cron_jobrunner',
     ],
     'data': [
         'security/ir.model.access.csv',
