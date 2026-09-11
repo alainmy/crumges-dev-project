@@ -12,9 +12,26 @@ class ResUsers(models.Model):
         
         # Odoo es el mandatario: bloqueamos creación/edición/eliminación desde Trello
         if action_type in ('addChecklistToCard', 'updateChecklist', 'removeChecklistFromCard', 'createCheckItem', 'deleteCheckItem', 'updateCheckItem'):
-            # updateCheckItem is also used for renaming an item. Trello sends state changes as 'updateCheckItemStateOnCard' usually, or 'updateCheckItem' with 'state'.
-            # If it's a state change, we allow it. If it's a rename or delete, we block it.
-            if action_type == 'updateCheckItem' and 'state' in action_data.get('data', {}).get('checkItem', {}):
+            
+            # Evitar infinite loop: Si fue creado por Odoo, ya tenemos el ID, así que lo ignoramos
+            if action_type == 'addChecklistToCard':
+                if self.env['project.task.checklist.line'].sudo().search_count([('trello_checklist_id', '=', action_data.get('data', {}).get('checklist', {}).get('id'))]):
+                    return
+            if action_type == 'createCheckItem':
+                if self.env['project.task.checklist.line'].sudo().search_count([('trello_item_id', '=', action_data.get('data', {}).get('checkItem', {}).get('id'))]):
+                    return
+                    
+            # Evitar infinite loop: Si es un update pero no cambió el nombre (Trello no reporta 'old.name'), ignorar
+            if action_type in ('updateChecklist', 'updateCheckItem'):
+                if 'name' not in action_data.get('data', {}).get('old', {}):
+                    # Solo nos importa si es un cambio de estado
+                    if action_type == 'updateCheckItem' and 'state' in action_data.get('data', {}).get('checkItem', {}):
+                        pass # Permitir cambio de estado
+                    else:
+                        return # No-op o cambio irrelevante, ignorar
+            
+            # updateCheckItem is also used for renaming an item.
+            if action_type == 'updateCheckItem' and 'state' in action_data.get('data', {}).get('checkItem', {}) and 'name' not in action_data.get('data', {}).get('old', {}):
                 # State change is allowed
                 pass
             else:

@@ -117,17 +117,7 @@ class ProjectProject(models.Model):
                 if res and isinstance(res, dict) and res.get('id'):
                     stage.write({'trello_list_id': res['id']})
                     
-    def _sync_trello_lists_order(self):
-        self.ensure_one()
-        user = self.env.user if self.env.user.trello_token else self.env['res.users'].sudo().search([('trello_token', '!=', False)], limit=1)
-        if not user or not self.trello_board_reference:
-            return
-        domain = ['|', ('project_ids', '=', self.id), ('id', 'in', self.task_ids.mapped('stage_id').ids)]
-        stages = self.env['project.task.type'].search(domain)
-        for stage in stages:
-            if stage.trello_list_id:
-                user._trello_request('PUT', f'/lists/{stage.trello_list_id}', params={'pos': 'bottom'})
-
+                    
         # 3.5 Importar Miembros del Tablero
         board_members = user._trello_request('GET', f'/boards/{self.trello_board_reference}/members')
         member_dict = {}
@@ -339,16 +329,47 @@ class ProjectProject(models.Model):
             user = self.env.user if self.env.user.trello_token else self.sudo().search([('trello_token', '!=', False)], limit=1)
             if user:
                 user.with_delay(channel='root.trello_sync')._trello_request('PUT', f'/boards/{self.trello_board_reference}', params={'name': self.name})
+                
+                # 2. Push stages (lists) if missing
+                domain = ['|', ('project_ids', '=', self.id), ('id', 'in', self.task_ids.mapped('stage_id').ids)]
+                stages = self.env['project.task.type'].search(domain)
+                for stage in stages:
+                    if not stage.trello_list_id:
+                        res = user._trello_request('POST', '/lists', params={
+                            'name': stage.name,
+                            'idBoard': self.trello_board_reference,
+                            'pos': 'bottom'
+                        })
+                        if res and isinstance(res, dict) and res.get('id'):
+                            stage.write({'trello_list_id': res['id']})
+                            
                 self.with_delay(channel='root.trello_sync')._sync_trello_lists_order()
-            # Mandamos a sincronizar forzosamente
-            self.with_delay(channel='root.trello_sync')._initial_trello_sync(self.trello_board_reference, is_new_board=False)
+                
+                # 3. Push all tasks unconditionally
+                for task in self.task_ids:
+                    if not task.trello_card_id:
+                        task.with_delay(channel='root.trello_sync')._sync_to_trello('create')
+                    else:
+                        task.with_delay(channel='root.trello_sync')._sync_to_trello('update')
+                        
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': 'Sincronización Iniciada',
-                    'message': 'Se ha enviado la orden a la cola de trabajos para sincronizar con Trello.',
+                    'message': 'Se ha enviado la orden de sobrescritura a Trello (Push Only).',
                     'type': 'success',
                     'sticky': False,
                 }
             }
+
+    def _sync_trello_lists_order(self):
+        self.ensure_one()
+        user = self.env.user if self.env.user.trello_token else self.env['res.users'].sudo().search([('trello_token', '!=', False)], limit=1)
+        if not user or not self.trello_board_reference:
+            return
+        domain = ['|', ('project_ids', '=', self.id), ('id', 'in', self.task_ids.mapped('stage_id').ids)]
+        stages = self.env['project.task.type'].search(domain)
+        for stage in stages:
+            if stage.trello_list_id:
+                user._trello_request('PUT', f'/lists/{stage.trello_list_id}', params={'pos': 'bottom'})

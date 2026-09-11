@@ -24,11 +24,11 @@
                                    invisible="trello_board_url == False or trello_sync == False"/>
                         </group>
                         <group string="Enviar a Trello (Sincronización Manual)" invisible="trello_sync == False or trello_board_reference == False">
-                            <button name="action_debug_sync_stages" type="object" string="Sincronizar Etapas" class="btn-secondary"/>
-                            <button name="action_debug_sync_tasks_titles" type="object" string="Sincronizar Tareas: Títulos" class="btn-secondary"/>
-                            <button name="action_debug_sync_tags" type="object" string="Sincronizar Etiquetas" class="btn-secondary"/>
-                            <button name="action_debug_sync_descriptions" type="object" string="Sincronizar Tareas: Descripciones" class="btn-secondary"/>
-                            <button name="action_trello_sync_now" type="object" string="Sincronizar Todo" class="btn-warning"/>
+                            <button name="action_debug_sync_stages" type="object" string="Enviar Etapas a Trello" class="btn-secondary"/>
+                            <button name="action_debug_sync_tasks_titles" type="object" string="Enviar Títulos a Trello" class="btn-secondary"/>
+                            <button name="action_debug_sync_tags" type="object" string="Enviar Etiquetas a Trello" class="btn-secondary"/>
+                            <button name="action_debug_sync_descriptions" type="object" string="Enviar Descripciones a Trello" class="btn-secondary"/>
+                            <button name="action_trello_sync_now" type="object" string="Enviar Todo a Trello" class="btn-primary"/>
                         </group>
                     </group>
                 </page>
