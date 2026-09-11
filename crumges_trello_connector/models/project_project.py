@@ -294,6 +294,20 @@ class ProjectProject(models.Model):
     def action_debug_sync_stages(self):
         self.ensure_one()
         if self.trello_board_reference:
+            user = self.env.user if self.env.user.trello_token else self.sudo().search([('trello_token', '!=', False)], limit=1)
+            if user:
+                domain = ['|', ('project_ids', '=', self.id), ('id', 'in', self.task_ids.mapped('stage_id').ids)]
+                stages = self.env['project.task.type'].search(domain)
+                for stage in stages:
+                    if not stage.trello_list_id:
+                        res = user._trello_request('POST', '/lists', params={
+                            'name': stage.name,
+                            'idBoard': self.trello_board_reference,
+                            'pos': 'bottom'
+                        })
+                        if res and isinstance(res, dict) and res.get('id'):
+                            stage.write({'trello_list_id': res['id']})
+                            
             self.with_delay(channel='root.trello_sync')._sync_trello_lists_order()
             return self._show_sync_notification('Sincronizando Etapas')
 
