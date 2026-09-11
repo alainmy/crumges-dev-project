@@ -288,6 +288,51 @@ class ProjectProject(models.Model):
             else:
                 task._sync_to_trello('update')
 
+
+    def _show_sync_notification(self, title):
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': 'Se ha enviado la orden de sincronización (Debug).',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+    def action_debug_sync_stages(self):
+        self.ensure_one()
+        if self.trello_board_reference:
+            self.with_delay(channel='root.trello_sync')._sync_trello_lists_order()
+            return self._show_sync_notification('Sincronizando Etapas')
+
+    def action_debug_sync_tasks_titles(self):
+        self.ensure_one()
+        user = self.env.user
+        if not user.trello_api_key or not user.trello_token: return
+        for task in self.task_ids.filtered('trello_card_id'):
+            user.with_delay(channel='root.trello_sync')._trello_request('PUT', f'/cards/{task.trello_card_id}', params={'name': task.name})
+        return self._show_sync_notification('Sincronizando Títulos')
+
+    def action_debug_sync_tags(self):
+        self.ensure_one()
+        user = self.env.user
+        if not user.trello_api_key or not user.trello_token: return
+        for task in self.task_ids.filtered('trello_card_id'):
+            task.with_delay(channel='root.trello_sync')._sync_to_trello('update') # Etiquetas
+        return self._show_sync_notification('Sincronizando Etiquetas')
+
+    def action_debug_sync_descriptions(self):
+        self.ensure_one()
+        user = self.env.user
+        if not user.trello_api_key or not user.trello_token: return
+        from .trello_tools import html_to_trello_markdown
+        for task in self.task_ids.filtered('trello_card_id'):
+            desc = html_to_trello_markdown(task.description or '')
+            user.with_delay(channel='root.trello_sync')._trello_request('PUT', f'/cards/{task.trello_card_id}', params={'desc': desc})
+        return self._show_sync_notification('Sincronizando Descripciones')
+
     def action_trello_sync_now(self):
         self.ensure_one()
         if self.trello_sync and self.trello_board_reference:
