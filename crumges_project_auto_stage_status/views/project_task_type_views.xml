@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="task_type_edit_inherit_auto_stage_status" model="ir.ui.view">
+        <field name="name">project.task.type.view.form.inherit.auto.stage.status</field>
+        <field name="model">project.task.type</field>
+        <field name="inherit_id" ref="project.task_type_edit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='fold']" position="after">
+                <field name="project_id" invisible="1"/>
+                <field name="default_state" widget="project_task_state_selection"/>
+                <field name="force_state_readonly" invisible="not default_state"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

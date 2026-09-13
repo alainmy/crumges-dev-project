@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Agregar el grupo a los menús principales del proyecto -->
+    <record id="project.menu_main_pm" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('portal_backend_project.group_portal_backend_project_user'))]"/>
+    </record>
+
+    <record id="project.menu_project_management" model="ir.ui.menu">
+        <field name="groups_id" eval="[(4, ref('portal_backend_project.group_portal_backend_project_user'))]"/>
+    </record>
+</odoo>

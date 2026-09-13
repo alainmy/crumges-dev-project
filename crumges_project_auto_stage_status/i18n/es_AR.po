@@ -1,0 +1,37 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* crumges_project_auto_stage_status
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-10 12:00+0000\n"
+"PO-Revision-Date: 2026-08-10 12:00+0000\n"
+"Last-Translator: Crumges\n"
+"Language-Team: Spanish (Argentina)\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: crumges_project_auto_stage_status
+#: model:ir.model.fields,field_description:crumges_project_auto_stage_status.field_project_task_type__default_state
+msgid "Default Status"
+msgstr "Estado por Defecto"
+
+#. module: crumges_project_auto_stage_status
+#: model:ir.model,name:crumges_project_auto_stage_status.model_project_task_type
+msgid "Task Stage"
+msgstr "Etapa de tarea"
+
+#. module: crumges_project_auto_stage_status
+#: model:ir.model,name:crumges_project_auto_stage_status.model_project_task
+msgid "Task"
+msgstr "Tarea"
+
+#. module: crumges_project_auto_stage_status
+#: model:ir.model.fields,help:crumges_project_auto_stage_status.field_project_task_type__default_state
+msgid "When a task enters this stage, its status will automatically be updated to this value."
+msgstr "Cuando una tarea entra a esta etapa, su estado se actualizará automáticamente a este valor."

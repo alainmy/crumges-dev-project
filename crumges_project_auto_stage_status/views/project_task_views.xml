@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form2_inherit_auto_stage_status" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.auto.stage.status</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="stage_force_state_readonly" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='state']" position="attributes">
+                <attribute name="readonly">stage_force_state_readonly</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
