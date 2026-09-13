@@ -1,8 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-portal_backend_project_user_project,portal-project-user-project,project.model_project_project,group_portal_backend_project_user,1,0,0,0
-portal_backend_project_user_task,portal-project-user-task,project.model_project_task,group_portal_backend_project_user,1,1,0,0
-portal_backend_project_user_tag,portal-project-user-tag,project.model_project_tags,group_portal_backend_project_user,1,0,0,0
-portal_backend_project_manager_task,portal-project-manager-task,project.model_project_task,group_portal_backend_project_manager,1,1,1,0
-portal_backend_project_embedded_actions,portal-project-embedded-actions,base.model_ir_embedded_actions,group_portal_backend_project_user,1,0,0,0
-portal_backend_project_task_type,portal-project-task-type,project.model_project_task_type,group_portal_backend_project_user,1,0,0,0
-portal_backend_project_task_stage_personal,portal-project-task-stage-personal,project.model_project_task_stage_personal,group_portal_backend_project_user,1,1,1,1
