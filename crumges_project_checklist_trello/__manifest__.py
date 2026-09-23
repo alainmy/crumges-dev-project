@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Crumges Project Checklist',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.2.0',
     'category': 'Project Management',
     'author': 'Crumges',
     'website': 'https://crumges.com',

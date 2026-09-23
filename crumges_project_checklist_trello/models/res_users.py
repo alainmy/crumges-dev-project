@@ -5,8 +5,11 @@ class ResUsers(models.Model):
     _inherit = 'res.users'
 
     def _process_trello_webhook_event(self, action_data):
+        if action_data.get('appCreator'):
+            return
+
         super()._process_trello_webhook_event(action_data)
-        
+
         action_type = action_data.get('type')
         card_data = action_data.get('data', {}).get('card', {})
         
@@ -15,10 +18,10 @@ class ResUsers(models.Model):
             
             # Evitar infinite loop: Si fue creado por Odoo, ya tenemos el ID, así que lo ignoramos
             if action_type == 'addChecklistToCard':
-                if self.env['project.task.checklist.line'].sudo().search_count([('trello_checklist_id', '=', action_data.get('data', {}).get('checklist', {}).get('id'))]):
+                if self.env['project.task.checklist'].sudo().search_count([('trello_checklist_id', '=', action_data.get('data', {}).get('checklist', {}).get('id'))]):
                     return
             if action_type == 'createCheckItem':
-                if self.env['project.task.checklist.line'].sudo().search_count([('trello_item_id', '=', action_data.get('data', {}).get('checkItem', {}).get('id'))]):
+                if self.env['project.task.checklist.item'].sudo().search_count([('trello_item_id', '=', action_data.get('data', {}).get('checkItem', {}).get('id'))]):
                     return
                     
             # Evitar infinite loop: Si es un update pero no cambió el nombre (Trello no reporta 'old.name'), ignorar
@@ -44,22 +47,16 @@ class ResUsers(models.Model):
                         if action_type == 'removeChecklistFromCard':
                             checklist_id = action_data.get('data', {}).get('checklist', {}).get('id')
                             if checklist_id:
-                                in_deleted_section = False
-                                for line in task.checklist_line_ids:
-                                    if line.display_type == 'line_section':
-                                        if line.trello_checklist_id == checklist_id:
-                                            line.trello_checklist_id = False
-                                            in_deleted_section = True
-                                        else:
-                                            in_deleted_section = False
-                                    elif in_deleted_section and not line.display_type:
-                                        line.trello_item_id = False
+                                checklist = task.checklist_ids.filtered(lambda c: c.trello_checklist_id == checklist_id)
+                                if checklist:
+                                    checklist.with_context(trello_webhook_sync=True).write({'trello_checklist_id': False})
+                                    checklist.item_ids.with_context(trello_webhook_sync=True).write({'trello_item_id': False})
                         elif action_type == 'deleteCheckItem':
                             item_id = action_data.get('data', {}).get('checkItem', {}).get('id')
                             if item_id:
-                                item = task.checklist_line_ids.filtered(lambda l: l.trello_item_id == item_id)
+                                item = task.checklist_ids.item_ids.filtered(lambda i: i.trello_item_id == item_id)
                                 if item:
-                                    item.trello_item_id = False
+                                    item.with_context(trello_webhook_sync=True).write({'trello_item_id': False})
 
                         # Mandar a sincronizar todos los checklists de esta tarea para revertir daños
                         task.with_delay(channel='root.trello_sync')._sync_checklists_to_trello()
@@ -71,6 +68,6 @@ class ResUsers(models.Model):
             state = check_item_data.get('state')
             item_id = check_item_data.get('id')
             if item_id and state in ('complete', 'incomplete'):
-                item = self.env['project.task.checklist.line'].sudo().search([('trello_item_id', '=', item_id)], limit=1)
+                item = self.env['project.task.checklist.item'].sudo().search([('trello_item_id', '=', item_id)], limit=1)
                 if item:
                     item.with_context(trello_webhook_sync=True).write({'is_checked': state == 'complete'})

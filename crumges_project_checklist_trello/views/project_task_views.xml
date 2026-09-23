@@ -14,26 +14,53 @@
                         </span>
                     </div>
                 </button>
+                <button name="action_clean_duplicate_checklists" type="object" class="oe_stat_button" icon="fa-copy" string="Limpiar duplicados"/>
             </div>
             <!-- Sección de Checklists después de la descripción -->
             <xpath expr="//page[@name='description_page']" position="after">
                 <page name="checklist_page" string="Checklists">
-                    <field name="checklist_line_ids" context="{'default_task_id': id}">
-                        <list string="Checklists" editable="bottom" delete="0" decoration-bf="display_type == 'line_section'" decoration-info="display_type == 'line_section'">
+                    <field name="checklist_ids" context="{'default_task_id': id}">
+                        <list string="Checklists" editable="bottom" delete="0" decoration-bf="1">
                             <control>
-                                <create name="add_item_control" string="Añadir ítem"/>
                                 <button name="%(crumges_project_checklist_trello.action_project_task_checklist_wizard)d" type="action" string="Añadir Checklist" context="{'default_task_id': parent.id}" class="btn-link"/>
+                                <button name="action_clean_duplicate_checklists" type="object" string="Limpiar duplicados" class="btn-link"/>
                             </control>
                             <field name="sequence" widget="handle"/>
-                            <field name="display_type" column_invisible="True"/>
-                            <field name="is_checked" widget="boolean" invisible="display_type != False"/>
-                            <field name="name" string="Checklist / Elemento"/>
-                            <field name="section_progress" string="Progreso" readonly="1" invisible="display_type != 'line_section'"/>
-                            <button name="action_delete_line" type="object" icon="fa-trash" title="Eliminar" confirm="¿Estás seguro de querer eliminar este registro? Si es un Checklist, también se eliminarán permanentemente todos los ítems que contenga."/>
+                            <field name="name" string="Checklist"/>
+                            <field name="section_progress" string="Progreso" readonly="1"/>
+                            <button name="action_view_checklist" type="object" string="Ítems" class="btn-link"/>
+                            <button name="action_delete_checklist" type="object" string="Eliminar" icon="fa-trash" confirm="¿Estás seguro de querer eliminar este Checklist? También se eliminarán permanentemente todos sus ítems."/>
                         </list>
                     </field>
                 </page>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_project_task_checklist_form" model="ir.ui.view">
+        <field name="name">project.task.checklist.form</field>
+        <field name="model">project.task.checklist</field>
+        <field name="arch" type="xml">
+            <form string="Checklist">
+                <group>
+                    <field name="task_id" invisible="1"/>
+                    <field name="name" string="Checklist"/>
+                    <field name="section_progress" string="Progreso" readonly="1"/>
+                </group>
+                <group string="Ítems">
+                    <field name="item_ids" context="{'default_checklist_id': id}">
+                        <list string="Ítems" editable="bottom" delete="0">
+                            <control>
+                                <create string="Añadir ítem"/>
+                            </control>
+                            <field name="sequence" widget="handle"/>
+                            <field name="is_checked" widget="boolean"/>
+                            <field name="name" string="Ítem"/>
+                            <button name="action_delete_item" type="object" string="Eliminar" icon="fa-trash" confirm="¿Estás seguro de querer eliminar este ítem?"/>
+                        </list>
+                    </field>
+                </group>
+            </form>
         </field>
     </record>
 

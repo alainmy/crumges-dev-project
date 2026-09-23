@@ -7,6 +7,9 @@ class ResUsers(models.Model):
 
     @api.model
     def _process_trello_webhook_event(self, action_data):
+        if action_data.get('appCreator'):
+            return
+
         action_type = action_data.get('type')
         
         # Bloquear la importación de nuestros propios comentarios de restricción para evitar duplicados en el Chatter
