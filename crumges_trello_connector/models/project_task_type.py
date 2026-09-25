@@ -32,8 +32,8 @@ class ProjectTaskType(models.Model):
 
     def _sync_to_trello(self, action, project=None):
         self.ensure_one()
-        user = self.env.user if self.env.user.trello_token else self.env['res.users'].sudo().search([('trello_token', '!=', False)], limit=1)
-        if not user or not user.trello_token:
+        user = self.env['res.users']._get_trello_auth_user()
+        if not user or not user.trello_api_key or not user.trello_token:
             return
             
         if action == 'create' and project and project.trello_board_reference:
@@ -43,7 +43,13 @@ class ProjectTaskType(models.Model):
                 'pos': 'bottom'
             })
             if res and isinstance(res, dict) and res.get('id'):
-                self.sudo().write({'trello_list_id': res['id']})
+                self.env['project.trello.stage'].set_trello_list_id(
+                    project.id, self.id, res['id']
+                )
                 
-        elif action == 'update' and self.trello_list_id:
-            user._trello_request('PUT', f'/lists/{self.trello_list_id}', params={'name': self.name})
+        elif action == 'update' and project:
+            trello_list_id = self.env['project.trello.stage'].get_trello_list_id(
+                project.id, self.id
+            )
+            if trello_list_id:
+                user._trello_request('PUT', f'/lists/{trello_list_id}', params={'name': self.name})

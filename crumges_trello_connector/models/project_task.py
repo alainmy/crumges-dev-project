@@ -29,7 +29,10 @@ class ProjectTask(models.Model):
         if self._context.get('trello_webhook_sync'):
             return res
             
-        fields_to_sync = ['name', 'description', 'stage_id', 'date_deadline', 'planned_date_begin', 'active', 'state', 'tag_ids']
+        fields_to_sync = [
+            'name', 'description', 'project_id', 'stage_id', 'date_deadline',
+            'planned_date_begin', 'active', 'state', 'tag_ids', 'user_ids',
+        ]
         if any(f in vals for f in fields_to_sync):
             for task in self:
                 if task.project_id.trello_board_id:
@@ -38,7 +41,7 @@ class ProjectTask(models.Model):
 
     def _sync_to_trello(self, action):
         self.ensure_one()
-        user = self.env.user
+        user = self.env['res.users']._get_trello_auth_user()
         if not user.trello_api_key or not user.trello_token:
             return
             
@@ -94,8 +97,12 @@ class ProjectTask(models.Model):
             
         if hasattr(self, 'state'):
             params['dueComplete'] = 'true' if self.state == '1_done' else 'false'
-        if self.stage_id and self.stage_id.trello_list_id:
-            params['idList'] = self.stage_id.trello_list_id
+        if self.stage_id and self.project_id:
+            trello_list_id = self.env['project.trello.stage'].get_trello_list_id(
+                self.project_id.id, self.stage_id.id
+            )
+            if trello_list_id:
+                params['idList'] = trello_list_id
             
         if action == 'create':
             params['idBoard'] = self.project_id.trello_board_reference
@@ -129,7 +136,7 @@ class ProjectTask(models.Model):
         from .trello_tools import html_to_trello_markdown
         text = html_to_trello_markdown(body_html)
         
-        user = self.env.user
+        user = self.env['res.users']._get_trello_auth_user()
         if user.trello_api_key and user.trello_token:
             res = user._trello_request('POST', f'/cards/{self.trello_card_id}/actions/comments', params={'text': text})
             if res and isinstance(res, dict) and res.get('id'):

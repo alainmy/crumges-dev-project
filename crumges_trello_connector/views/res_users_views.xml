@@ -11,6 +11,13 @@
                         <group string="Credenciales">
                             <field name="trello_api_key"/>
                             <field name="trello_token"/>
+                            <div class="oe_button_box" name="button_box" >
+                                <button name="action_trello_webhook" type="object"
+                                    class="oe_stat_button" icon="fa-">
+                                    Register Webhook
+                                </button>
+                            </div>
+                            <field name="trello_webhook_url"/>
                         </group>
                         <group string="Configuración">
                             <field name="trello_sync_enabled" widget="boolean_toggle"/>

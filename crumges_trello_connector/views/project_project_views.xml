@@ -22,6 +22,11 @@
                                    widget="url" 
                                    readonly="1" 
                                    invisible="trello_board_url == False or trello_sync == False"/>
+                                <button name="action_clear_trello_references"
+                                    type="object"
+                                    string="Limpiar referencias Trello"
+                                    class="btn-secondary"
+                                    confirm="Esto desvinculará Trello del proyecto y limpiará las referencias de sus tareas, etapas, etiquetas y checklists. ¿Continuar?"/>
                         </group>
                         <group string="Enviar a Trello (Sincronización Manual)" invisible="trello_sync == False or trello_board_reference == False">
                             <button name="action_debug_sync_stages" type="object" string="Enviar Etapas a Trello" class="btn-secondary"/>

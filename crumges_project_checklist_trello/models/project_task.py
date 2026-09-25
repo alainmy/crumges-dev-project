@@ -96,8 +96,8 @@ class ProjectTask(models.Model):
         if not self.trello_card_id:
             return
 
-        user = self.env.user if self.env.user.trello_token else self.env['res.users'].sudo().search([('trello_token', '!=', False)], limit=1)
-        if not user:
+        user = self.env['res.users']._get_trello_auth_user()
+        if not user or not user.trello_api_key or not user.trello_token:
             return
 
         for checklist in self.checklist_ids:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Crumges Trello Connector',
-    'version': '18.0.1.0.2',
+    'version': '18.0.1.0.4',
     'category': 'Project Management',
     'author': 'Crumges',
     'website': 'https://crumges.com',

@@ -7,3 +7,4 @@ class TrelloBoard(models.Model):
 
     name = fields.Char(string='Nombre del Tablero', required=True)
     trello_id = fields.Char(string='ID en Trello', required=True, index=True)
+    trello_url = fields.Char(string='URL en Trello')
