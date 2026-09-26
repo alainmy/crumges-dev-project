@@ -117,6 +117,11 @@ class ProjectProject(models.Model):
             can_sync = 'trello_sync' in vals
             can_sync = can_sync and vals.get('trello_sync')
             if not can_sync:
+                # Delete webhooks
+                if project.trello_board_id and project.trello_board_id.webhook_id:
+                    user = self.env['res.users']._get_trello_auth_user()
+                    if user and user.trello_api_key and user.trello_token:
+                        user._webhook_request('DELETE', f'/webhooks/{project.trello_board_id.webhook_id}')
                 project.trello_board_id.unlink()
                 continue
             sync_requested = can_sync or 'trello_board_id' in vals
@@ -127,34 +132,56 @@ class ProjectProject(models.Model):
                         # Buscar por nombre
                         board_info = user._trello_request('GET', '/members/me/boards', params={'fields': 'name,id,url'})
                         board_info = next((b for b in board_info if b.get('name') == project.name), None) if isinstance(board_info, list) else None
+                        
+                        # Buscar web hook
                         if board_info and isinstance(board_info, dict) and board_info.get('id'):
                             # Guardarlo en el caché de Odoo y vincularlo
-                            new_board = self.env['trello.board'].create({
-                                'name': board_info.get('name'),
-                                'trello_id': board_info.get('id'),
-                                'trello_url': board_info.get('url'),
+                            
+                            # Create a webhook
+                            webhook_res = user._webhook_request('POST', '/webhooks', params={
+                                'description': f'Webhook for board {board_info.get("name")}',
+                                'callbackURL': self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/trello/webhook/update',
+                                'idModel': board_info.get('id'),
                             })
-                            super(ProjectProject, project).write({
-                                'trello_board_id': new_board.id,
-                            })
-                            project.with_delay(channel='root.trello_sync')._initial_trello_sync(new_board.trello_id, is_new_board=True)
-                            continue
+                            if webhook_res and isinstance(webhook_res, dict) and webhook_res.get('id'):
+                                webhook_url = webhook_res.get('callbackURL')
+                                new_board = self.env['trello.board'].create({
+                                    'name': board_info.get('name'),
+                                    'trello_id': board_info.get('id'),
+                                    'trello_url': board_info.get('url'),
+                                    'webhook_url':webhook_url,
+                                    'webhook_id': webhook_res.get('id'),
+                                })
+                                super(ProjectProject, project).write({
+                                    'trello_board_id': new_board.id,
+                                })
+                                project.with_delay(channel='root.trello_sync')._initial_trello_sync(new_board.trello_id, is_new_board=True)
+                                continue
                         # Crear el tablero en Trello
                         board_params = {'name': project.name}
                         trello_res = user._trello_request('POST', '/boards', params=board_params)
                         if trello_res and isinstance(trello_res, dict) and trello_res.get('id'):
                             # Guardarlo en el caché de Odoo y vincularlo
-                            new_board = self.env['trello.board'].create({
-                                'name': trello_res.get('name'),
-                                'trello_id': trello_res.get('id'),
-                                'trello_url': trello_res.get('url'),
-                            })
-                            # Usamos un super().write para evitar recursiones si tuviéramos lógica encadenada
-                            super(ProjectProject, project).write({
-                                'trello_board_id': new_board.id,
-                            })
-                            # Iniciar sincronización masiva para el tablero nuevo
-                            project.with_delay(channel='root.trello_sync')._initial_trello_sync(new_board.trello_id, is_new_board=True)
+                            webhook_res = user._webhook_request('POST', '/webhooks', params={
+                                                            'description': f'Webhook for board {trello_res.get("name")}',
+                                                            'callbackURL': self.env['ir.config_parameter'].sudo().get_param('web.base.url') + '/trello/webhook/update',
+                                                            'idModel': trello_res.get('id'),
+                                                        })
+                            if webhook_res and isinstance(webhook_res, dict) and webhook_res.get('id'):
+                                webhook_url = webhook_res.get('callbackURL')
+                                new_board = self.env['trello.board'].create({
+                                    'name': trello_res.get('name'),
+                                    'trello_id': trello_res.get('id'),
+                                    'trello_url': trello_res.get('url'),
+                                    'webhook_url': webhook_url,
+                                    'webhook_id': webhook_res.get('id'),
+                                })
+                                # Usamos un super().write para evitar recursiones si tuviéramos lógica encadenada
+                                super(ProjectProject, project).write({
+                                    'trello_board_id': new_board.id,
+                                })
+                                # Iniciar sincronización masiva para el tablero nuevo
+                                project.with_delay(channel='root.trello_sync')._initial_trello_sync(new_board.trello_id, is_new_board=True)
                         else:
                             super(ProjectProject, project).write({'trello_sync': False})
                             project.message_post(body="<p class='text-danger'><b>⚠️ Error de Trello:</b> Se ha alcanzado el límite de tableros. Elimina algunos y vuelve a encender el switch.</p>")
