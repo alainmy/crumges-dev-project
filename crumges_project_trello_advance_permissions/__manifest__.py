@@ -14,8 +14,6 @@
     'author': 'Crumges',
     'website': 'https://crumges.com',
     'depends': [
-        'project',
-        'crumges_trello_connector',
         'crumges_project_checklist_trello'
     ],
     'data': [
