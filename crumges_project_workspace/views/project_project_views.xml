@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add Workspace to Project Form -->
+    <record id="edit_project_inherit_workspace" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.workspace</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="workspace_id" required="1" readonly="1" options="{'no_quick_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Add Search Panel to Project Search View -->
+    <record id="view_project_project_filter_inherit_workspace" model="ir.ui.view">
+        <field name="name">project.project.search.inherit.workspace</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <searchpanel>
+                    <field name="workspace_id" icon="fa-folder" enable_counters="1"/>
+                </searchpanel>
+            </xpath>
+            <xpath expr="//search/group" position="inside">
+                <filter string="Espacio de Trabajo" name="groupby_workspace" context="{'group_by': 'workspace_id'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

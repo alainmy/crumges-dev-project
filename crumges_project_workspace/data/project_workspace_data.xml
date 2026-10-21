@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="workspace_inbox" model="project.workspace">
+            <field name="name">Bandeja de Entrada</field>
+            <field name="type_id" ref="workspace_type_general"/>
+            <field name="description">Espacio por defecto para proyectos sin categorizar.</field>
+        </record>
+    </data>
+</odoo>

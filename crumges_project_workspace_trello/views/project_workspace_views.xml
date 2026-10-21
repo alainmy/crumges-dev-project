@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_workspace_form_inherit_trello" model="ir.ui.view">
+        <field name="name">project.workspace.form.inherit.trello</field>
+        <field name="model">project.workspace</field>
+        <field name="inherit_id" ref="crumges_project_workspace.view_project_workspace_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_sync_to_trello" type="object" class="oe_stat_button" icon="fa-trello" invisible="trello_id != False">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Vincular a Trello</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Trello" name="trello">
+                    <group>
+                        <group string="Sincronización">
+                            <field name="trello_id" invisible="not trello_id"/>
+                            <field name="trello_url" widget="url" invisible="not trello_url"/>
+                        </group>
+                        <group string="Límites">
+                            <field name="trello_max_boards" readonly="1"/>
+                            <field name="trello_active_boards_count"/>
+                            <label for="trello_real_boards_count"/>
+                            <div class="o_row">
+                                <field name="trello_real_boards_count"/>
+                                <button name="action_refresh_trello_boards" type="object" icon="fa-refresh" title="Actualizar desde Trello" class="btn-link oe_inline"/>
+                            </div>
+                            <div colspan="2" class="text-muted" invisible="trello_max_boards == 0">
+                                <i>Si la cantidad de tableros reales en Trello supera el límite, se creará un nuevo Espacio de Trabajo automáticamente al sincronizar.</i>
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

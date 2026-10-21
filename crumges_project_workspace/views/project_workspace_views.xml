@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_project_workspace_tree" model="ir.ui.view">
+        <field name="name">project.workspace.list</field>
+        <field name="model">project.workspace</field>
+        <field name="arch" type="xml">
+            <list string="Espacios de Trabajo">
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="project_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_project_workspace_form" model="ir.ui.view">
+        <field name="name">project.workspace.form</field>
+        <field name="model">project.workspace</field>
+        <field name="arch" type="xml">
+            <form string="Espacio de Trabajo">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_projects" type="object" class="oe_stat_button" icon="fa-puzzle-piece">
+                            <field name="project_count" widget="statinfo" string="Proyectos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Ej. Marketing..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="project_count" invisible="1"/>
+                            <field name="type_id" required="1" readonly="project_count &gt; 0" options="{'no_create': False, 'no_quick_create': True}"/>
+                            <label for="max_projects"/>
+                            <div class="o_row">
+                                <field name="max_projects"/>
+                                <span class="text-muted ms-2">(0 = Sin límite)</span>
+                            </div>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Proyectos" name="projects">
+                            <field name="project_ids" widget="many2many" context="{'default_workspace_id': id}">
+                                <list string="Proyectos">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="user_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Descripción" name="description">
+                            <field name="description" placeholder="Añade una descripción para este espacio de trabajo..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_project_workspace" model="ir.actions.act_window">
+        <field name="name">Espacios de Trabajo</field>
+        <field name="res_model">project.workspace</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Crea tu primer Espacio de Trabajo
+          </p>
+          <p>
+            Agrupa tus proyectos de manera eficiente.
+          </p>
+        </field>
+    </record>
+
+    <!-- Menu Item in Project Configuration -->
+    <menuitem id="menu_project_workspace"
+              name="Espacios de Trabajo"
+              parent="project.menu_project_config"
+              action="action_project_workspace"
+              sequence="5"/>
+</odoo>
